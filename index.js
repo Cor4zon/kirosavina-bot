@@ -1,36 +1,12 @@
 require('dotenv').config();
-const express = require('express');
-const bodyParser = require('body-parser');
-const axios = require('axios');
+const { Telegraf} = require('telegraf');
 
-const { TOKEN, SERVER_URL }  = process.env;
-const TELEGRAM_API = `https://api.telegram.org/bot${TOKEN}`;
-const URI = `/webhook/${TOKEN}`;
-const WEBHOOK_URL = SERVER_URL+URI;
+const bot = new Telegraf(process.env.TOKEN);
 
-const app = express();
-app.use(bodyParser.json());
+bot.start(ctx => ctx.reply('You are welcome'));
 
-const init = async () => {
-    const res = await axios.get(`${TELEGRAM_API}/setWebhook?url=${WEBHOOK_URL}`);
-    console.log(res.data);
-}
+bot.command('oldschool', (ctx) => ctx.reply('Hello'))
+bot.command('modern', ({ reply }) => reply('Yo'))
+bot.command('hipster', Telegraf.reply('λ'))
 
-app.post(URI, async (req, res) => {
-    console.log(req.body);
-
-    const chatId = req.body.message.chat.id;
-    const text = req.body.message.text;
-
-    await axios.post(`${TELEGRAM_API}/sendMessage`, {
-        chat_id: chatId,
-        text: text,
-    });
-
-    return res.send(req.body.message.text);
-})
-
-app.listen(process.env.PORT || 5000, async () => {
-    console.log(`app running on port`, process.env.PORT || 5000);
-    await init();
-});
+bot.launch();
